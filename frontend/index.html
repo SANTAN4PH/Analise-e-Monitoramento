@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WattWise - Monitorização Inteligente</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./css/style.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M11.5 22C11.2 22 11 21.8 11 21.5V13H6.5C6.1 13 5.8 12.6 6 12.2L11.5 2.3C11.7 2 12.1 1.9 12.4 2.1C12.6 2.2 12.7 2.4 12.7 2.6L12.5 11H17.5C17.9 11 18.2 11.4 18 11.8L12.5 21.7C12.3 22 11.9 22.1 11.6 21.9C11.5 21.9 11.5 21.9 11.5 22Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>WattWise</h1>
+          <p>IoT Energy Suite</p>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active" data-tab="visao-geral">
+          <button>
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h1v7c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-7h1a1 1 0 0 0 .707-1.707l-9-9a.999.999 0 0 0-1.414 0l-9 9A1 1 0 0 0 3 13zm9-8.586 6 6V20H6v-9.586l6-6z"/></svg>
+            Painel Principal
+          </button>
+        </li>
+        <li class="nav-item" data-tab="poupanca">
+          <button>
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M13 7h-2v6h6v-2h-4z"/></svg>
+            Dicas de Eficiência
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <p>V3.2.0 - SQLite & ESP32</p>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    
+    <header class="topo">
+      <div class="titulo-pagina">
+        <h2 id="titulo-pagina-dinamico">Painel de Controlo</h2>
+        <p id="subtitulo-pagina-dinamico">Monitorização em tempo real da rede elétrica</p>
+      </div>
+
+      <div class="status-api">
+        <span id="statusIndicador" class="bola-status"></span>
+        <span id="statusTexto">A ligar ao ESP32...</span>
+      </div>
+    </header>
+
+    <div class="container">
+      
+      <section id="content-visao-geral" class="tab-content active">
+        
+        <div class="cards">
+          <div class="card">
+            <div class="card-info">
+              <div>
+                <span class="card-titulo">Corrente Atual</span>
+                <h2 id="correnteAtual">-- A</h2>
+              </div>
+              <div class="card-icon-wrapper">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+            </div>
+            <strong id="correnteAtual" style="display:none;">-- A</strong>
+          </div>
+
+          <div class="card">
+            <div class="card-info">
+              <div>
+                <span class="card-titulo">Potência Ativa</span>
+                <h2 id="potenciaAtual">-- W</h2>
+              </div>
+              <div class="card-icon-wrapper">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+              </div>
+            </div>
+            <strong id="potenciaAtual" style="display:none;">-- W</strong>
+          </div>
+
+          <div class="card">
+            <div class="card-info">
+              <div>
+                <span class="card-titulo">Consumo Acumulado</span>
+                <h2 id="consumoTotal">-- kWh</h2>
+              </div>
+              <div class="card-icon-wrapper">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+              </div>
+            </div>
+            <strong id="consumoTotal" style="display:none;">-- kWh</strong>
+          </div>
+
+          <div class="card card-destaque">
+            <div class="card-info">
+              <div>
+                <span class="card-titulo" style="color: rgba(255, 255, 255, 0.7);">Custo Estimado</span>
+                <h2 id="valorEstimado" class="badge-verde" style="font-size: 2rem;">R$ --</h2>
+              </div>
+              <div class="card-icon-wrapper">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+            <strong id="valorEstimado" style="display:none;">R$ --</strong>
+          </div>
+        </div>
+
+        <div class="grafico-card-wide">
+          <div class="secao-titulo">
+            <div>
+              <h2>Desempenho de Potência Ativa</h2>
+              <p>Histórico analítico das leituras do sensor em Watts (W)</p>
+            </div>
+            <span class="tag-live">Em Direto</span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="graficoPotencia"></canvas>
+          </div>
+        </div>
+
+        <table style="display: none;">
+          <tbody id="tabelaLeituras"></tbody>
+          <tbody id="tabelaLeiturasMini"></tbody>
+        </table>
+      </section>
+
+      <section id="content-poupanca" class="tab-content">
+        <div class="info-card">
+          <div class="secao-titulo">
+            <div>
+              <h2>Recomendações de Poupança</h2>
+              <p>Sugestões baseadas em boas práticas de eficiência energética</p>
+            </div>
+          </div>
+          
+          <div class="dicas-grelha">
+            <div class="dica-item">
+              <h4>Evite o consumo em Standby</h4>
+              <p>Dispositivos ligados à tomada em modo de espera (luz vermelha acesa) podem representar até 12% do consumo de eletricidade da casa.</p>
+            </div>
+            <div class="dica-item">
+              <h4>Iluminação LED eficiente</h4>
+              <p>A substituição de lâmpadas antigas por tecnologia LED proporciona uma redução de consumo imediata de até 80% por ponto de luz.</p>
+            </div>
+            <div class="dica-item">
+              <h4>Aproveitamento de Tarifas Bi-Horárias</h4>
+              <p>Tente programar eletrodomésticos térmicos de grande consumo (máquinas de lavar, secadores, termoacumuladores) para o período noturno.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="./js/dashboard.js"></script>
+  
+  <script>
+    /* Lógica de Alternância SPA (Tabs) */
+    document.addEventListener("DOMContentLoaded", () => {
+      const menuItems = document.querySelectorAll(".nav-menu .nav-item");
+      const tabContents = document.querySelectorAll(".tab-content");
+      const tituloPagina = document.getElementById("titulo-pagina-dinamico");
+      const subtituloPagina = document.getElementById("subtitulo-pagina-dinamico");
+
+      const informacoesHeader = {
+        "visao-geral": { titulo: "Painel de Controlo", subtitulo: "Monitorização em tempo real da rede elétrica" },
+        "poupanca": { titulo: "Eficiência Energética", subtitulo: "Dicas personalizadas para otimizar os seus custos" }
+      };
+
+      menuItems.forEach(item => {
+        item.addEventListener("click", () => {
+          const tabId = item.getAttribute("data-tab");
+          menuItems.forEach(i => i.classList.remove("active"));
+          item.classList.add("active");
+
+          tabContents.forEach(content => {
+            content.classList.remove("active");
+            if (content.id === `content-${tabId}`) content.classList.add("active");
+          });
+
+          if (informacoesHeader[tabId]) {
+            tituloPagina.textContent = informacoesHeader[tabId].titulo;
+            subtituloPagina.textContent = informacoesHeader[tabId].subtitulo;
+          }
+        });
+      });
+
+      /* Sincronização automática para manter o JavaScript original sem quebras */
+      const ids = ['correnteAtual', 'potenciaAtual', 'consumoTotal', 'valorEstimado'];
+      ids.forEach(id => {
+        const h2El = document.querySelector(`.card-info h2[id="${id}"]`);
+        const strongEl = document.querySelector(`strong[id="${id}"]`);
+        if (h2El && strongEl) {
+          const observer = new MutationObserver(() => { h2El.textContent = strongEl.textContent; });
+          observer.observe(strongEl, { characterData: true, childList: true, subtree: true });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
