@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "";
 
 const correnteAtualEl = document.getElementById("correnteAtual");
 const potenciaAtualEl = document.getElementById("potenciaAtual");
@@ -28,7 +28,7 @@ function formatarData(dataBanco) {
     return "--";
   }
 
-  const data = new Date(dataBanco.replace(" ", "T"));
+  const data = new Date(String(dataBanco).replace(" ", "T"));
 
   if (isNaN(data.getTime())) {
     return dataBanco;
@@ -50,7 +50,7 @@ function atualizarStatusApi(online) {
 }
 
 async function buscarResumo() {
-  const resposta = await fetch(`${API_BASE_URL}/leituras/resumo`);
+  const resposta = await fetch(`${API_BASE_URL}/api/leituras/resumo`);
 
   if (!resposta.ok) {
     throw new Error("Erro ao buscar resumo");
@@ -60,7 +60,7 @@ async function buscarResumo() {
 }
 
 async function buscarLeituras() {
-  const resposta = await fetch(`${API_BASE_URL}/leituras`);
+  const resposta = await fetch(`${API_BASE_URL}/api/leituras`);
 
   if (!resposta.ok) {
     throw new Error("Erro ao buscar leituras");
@@ -108,6 +108,10 @@ function atualizarTabela(leituras) {
 }
 
 function atualizarGrafico(leituras) {
+  if (!graficoCanvas) {
+    return;
+  }
+
   const leiturasOrdenadas = [...leituras].reverse();
 
   const labels = leiturasOrdenadas.map((leitura) => {

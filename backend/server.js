@@ -1,33 +1,29 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const leiturasRoutes = require("./routes/leituras.routes");
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 
+// Servir o frontend que está fora da pasta backend
+const frontendPath = path.join(__dirname, "..", "frontend");
+app.use(express.static(frontendPath));
+
+// Rotas da API
+app.use("/api/leituras", leiturasRoutes);
+
+// Rota principal
 app.get("/", (req, res) => {
-  res.json({
-    mensagem: "API WattWise funcionando.",
-    rotas: {
-      leituras: "/leituras",
-      resumo: "/leituras/resumo"
-    }
-  });
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-app.use("/leituras", leiturasRoutes);
+// Porta correta para local e Render
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("====================================");
-  console.log("Servidor WattWise iniciado");
-  console.log(`Rodando em: http://localhost:${PORT}`);
-  console.log(`Rota de teste: http://localhost:${PORT}/`);
-  console.log(`Rota de leituras: http://localhost:${PORT}/leituras`);
-  console.log(`Rota de resumo: http://localhost:${PORT}/leituras/resumo`);
-  console.log("Aguardando dados do ESP32...");
-  console.log("====================================");
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
