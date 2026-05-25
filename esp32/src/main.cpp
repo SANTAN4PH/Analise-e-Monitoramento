@@ -1,20 +1,25 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <math.h>
 
 #define PIN_SENSOR 35
 
 // =========================
-// REDE WI-FI CRIADA PELO ESP32
+// REDE WI-FI COM INTERNET
 // =========================
-const char* apSSID = "WattWise_ESP32";
-const char* apPassword = "12345678";
+const char* ssid = "TP_LINK";
+const char* password = "geladeira";
 
-// IP do computador conectado na rede do ESP32.
-// Confira no Windows com ipconfig.
-// Geralmente será 192.168.4.2.
-const char* serverUrl = "http://192.168.4.2:3000/leituras";
+// URL do backend no Render   https://wattwise-vqjl.onrender.com/routes/leituras
+const char* serverUrl = "https://wattwise-vqjl.onrender.com/api/leituras";
+// =========================
+// CONFIGURAÇÕES DE ENERGIA
+// =========================
+float tensaoRede = 127.0;      // coloque 127.0 ou 220.0 conforme sua rede
+float tarifaKwh = 0.85;        // valor aproximado do kWh
+float fatorPotencia = 1.0;     // para carga resistiva, pode deixar 1.0
 
 // =========================
 // SENSOR SCT-013
@@ -23,31 +28,37 @@ const char* serverUrl = "http://192.168.4.2:3000/leituras";
 #define ADC_VREF 3.3
 #define NUM_AMOSTRAS 2000
 
-float fatorCalibracao = 30.0;
+float fatorCalibracao = 100.0;
 
 unsigned long ultimoEnvio = 0;
-const unsigned long intervaloEnvio = 5000;
+const unsigned long intervaloEnvio = 10000; // 10 segundos
 
-void criarRedeWiFi() {
+void conectarWiFi() {
   Serial.println();
-  Serial.println("Criando rede Wi-Fi do ESP32...");
+  Serial.println("Conectando ao Wi-Fi...");
 
-  WiFi.mode(WIFI_AP);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
 
-  bool status = WiFi.softAP(apSSID, apPassword);
+  int tentativas = 0;
 
-  if (status) {
-    Serial.println("Rede criada com sucesso!");
-    Serial.print("Nome da rede: ");
-    Serial.println(apSSID);
+  while (WiFi.status() != WL_CONNECTED && tentativas < 30) {
+    delay(1000);
+    Serial.print(".");
+    tentativas++;
+  }
 
-    Serial.print("Senha: ");
-    Serial.println(apPassword);
+  Serial.println();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("Wi-Fi conectado com sucesso!");
+    Serial.print("Rede: ");
+    Serial.println(ssid);
 
     Serial.print("IP do ESP32: ");
-    Serial.println(WiFi.softAPIP());
+    Serial.println(WiFi.localIP());
   } else {
-    Serial.println("Erro ao criar rede Wi-Fi.");
+    Serial.println("Falha ao conectar no Wi-Fi.");
   }
 }
 
@@ -80,14 +91,39 @@ float lerCorrenteRMS() {
 }
 
 void enviarLeitura(float corrente) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wi-Fi desconectado. Tentando reconectar...");
+    conectarWiFi();
+    return;
+  }
+
+  float potencia = corrente * tensaoRede * fatorPotencia;
+
+  float tempoHoras = intervaloEnvio / 3600000.0;
+  float consumoKwh = (potencia * tempoHoras) / 1000.0;
+
+  float valorEstimado = consumoKwh * tarifaKwh;
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
   HTTPClient http;
 
-  http.begin(serverUrl);
+  http.begin(client, serverUrl);
   http.addHeader("Content-Type", "application/json");
 
   String json = "{";
   json += "\"corrente\":";
   json += String(corrente, 3);
+  json += ",";
+  json += "\"potencia\":";
+  json += String(potencia, 2);
+  json += ",";
+  json += "\"consumo_kwh\":";
+  json += String(consumoKwh, 8);
+  json += ",";
+  json += "\"valor_estimado\":";
+  json += String(valorEstimado, 6);
   json += "}";
 
   Serial.println();
@@ -123,12 +159,12 @@ void setup() {
 
   Serial.println();
   Serial.println("====================================");
-  Serial.println("WattWise - ESP32 Access Point");
+  Serial.println("WattWise - ESP32 conectado ao Render");
   Serial.println("SCT-013 no GPIO 35");
-  Serial.println("Enviando corrente para o backend");
+  Serial.println("Enviando corrente, potencia e consumo");
   Serial.println("====================================");
 
-  criarRedeWiFi();
+  conectarWiFi();
 }
 
 void loop() {
