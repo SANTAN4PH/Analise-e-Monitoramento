@@ -15,7 +15,7 @@ router.get("/", (req, res) => {
       data_hora
     FROM leituras
     ORDER BY id DESC
-    LIMIT 20
+    LIMIT 500
   `;
 
   db.all(sql, [], (err, rows) => {
@@ -30,14 +30,14 @@ router.get("/", (req, res) => {
   });
 });
 
-// Buscar resumo
+// Buscar resumo geral
 router.get("/resumo", (req, res) => {
   const sql = `
     SELECT 
       COALESCE(AVG(corrente), 0) AS corrente_media,
       COALESCE(AVG(potencia), 0) AS potencia_media,
-      COALESCE(SUM(consumo), 0) AS consumo_total,
-      COALESCE(SUM(valor_estimado), 0) AS valor_total
+      COALESCE(SUM(consumo), 0) AS consumo_total_kwh,
+      COALESCE(SUM(valor_estimado), 0) AS valor_total_estimado
     FROM leituras
   `;
 
@@ -55,13 +55,22 @@ router.get("/resumo", (req, res) => {
 
 // Cadastrar nova leitura
 router.post("/", (req, res) => {
-  const { corrente, potencia, consumo, valor_estimado } = req.body;
+  const {
+    corrente,
+    potencia,
+    consumo,
+    consumo_kwh,
+    valor_estimado
+  } = req.body;
 
   if (corrente === undefined || potencia === undefined) {
     return res.status(400).json({
       erro: "Corrente e potência são obrigatórias"
     });
   }
+
+  const consumoFinal = Number(consumo_kwh ?? consumo ?? 0);
+  const valorFinal = Number(valor_estimado ?? 0);
 
   const sql = `
     INSERT INTO leituras 
@@ -74,8 +83,8 @@ router.post("/", (req, res) => {
     [
       Number(corrente),
       Number(potencia),
-      Number(consumo || 0),
-      Number(valor_estimado || 0)
+      consumoFinal,
+      valorFinal
     ],
     function (err) {
       if (err) {
@@ -87,7 +96,13 @@ router.post("/", (req, res) => {
 
       res.status(201).json({
         mensagem: "Leitura cadastrada com sucesso",
-        id: this.lastID
+        id: this.lastID,
+        dados: {
+          corrente: Number(corrente),
+          potencia: Number(potencia),
+          consumo: consumoFinal,
+          valor_estimado: valorFinal
+        }
       });
     }
   );
