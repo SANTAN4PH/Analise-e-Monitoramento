@@ -12,8 +12,8 @@
 const char* ssid = "TP_LINK";
 const char* password = "geladeira";
 
-// URL do backend no Render   https://wattwise-vqjl.onrender.com/routes/leituras
-const char* serverUrl = "https://wattwise-vqjl.onrender.com/api/leituras";
+
+const char* serverUrl = "https://analise-e-monitoramento.onrender.com/api/leituras";
 // =========================
 // CONFIGURAÇÕES DE ENERGIA
 // =========================
